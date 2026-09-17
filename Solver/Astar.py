@@ -16,6 +16,7 @@ class Astar(SearchStrategy):
         init_g = 0
         init_h = self.get_heuristic(initial_state, m)
         init_f = init_g + init_h
+        best_g = {initial_state: 0}
         seq = 0 # This will prevent the crash if cost between state is the same
 
         pq = [(init_f, init_g, seq, initial_state, [])]
@@ -33,9 +34,10 @@ class Astar(SearchStrategy):
             visited.add(state)
 
             for next_state, action, step_cost in self.get_successor(m, state):
-                if next_state not in visited:
+                new_g = g + step_cost
+                if next_state not in visited and new_g < best_g.get(next_state, float('inf')):
+                    best_g[next_state] = new_g
                     new_h = self.get_heuristic(next_state, m)
-                    new_g = g + step_cost
                     new_f = new_g + new_h
 
                     new_path = path + [action]
@@ -47,12 +49,12 @@ class Astar(SearchStrategy):
     # We're using BFS to preprocess a lookup table since the forbidden of Manhattan distance and Euclidean, then get the max value of H(n) since we will simplifier the problem with easier rules
     # BFS will answer "How many steps I needs to get any box in the map reach to the specific goal"
     # E.g: {(2, 3): {(3, 4): 4, ...}}
-    def get_distance_by_goal(self, goal, m: map):
+    def get_distance_by_goal(self, goal, m: Map):
         direction = [
             (0, 1), # Down
             (0, -1), # Up
-            (1, 0), # Left
-            (0, 1) # Right
+            (-1, 0), # Left
+            (1, 0) # Right
         ]
 
         queue = deque([goal])
