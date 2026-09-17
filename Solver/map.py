@@ -12,7 +12,7 @@ class Map:
         self.load_from_file(filename)
 
     def __str__(self):
-        res = 'Agent Pos: (%d, %d), Num of boxes: %d\n'%(self.agent_pos[0], self.agent_pos[1], len(self.boxes_pos))
+        res = 'Agent Pos: (%d, %d), Num of boxes: %d\nHeight: %d, Width: %d'%(self.agent_pos[0], self.agent_pos[1], len(self.boxes_pos), self.height, self.width)
         return res
 
     def print(self):
@@ -64,7 +64,10 @@ class Map:
 class State:
     def __init__(self, agent_pos, boxes_pos):
         self.agent_pos = agent_pos
-        self.boxes_pos = boxes_pos
+        self.boxes_pos = frozenset(boxes_pos)
 
     def __eq__(self, other):
         return self.agent_pos == other.agent_pos and self.boxes_pos == other.boxes_pos
+
+    def __hash__(self):
+        return hash((self.agent_pos, self.boxes_pos))

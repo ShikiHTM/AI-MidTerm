@@ -1,6 +1,9 @@
 from map import Map, State
 
 class SearchStrategy:
+    def __init__(self):
+        self.nodes = 0
+
     def search(self, m: Map, initial_state: State):
         path = []
         cost = 0
@@ -40,7 +43,8 @@ class SearchStrategy:
                 new_boxes.add(next_box_pos)
 
             # Create a new state S = S'
-            new_state = State(next_agent_pos, new_boxes)
+            new_state = State(next_agent_pos, frozenset(new_boxes))
+            self.nodes += 1;
             successors.append((new_state, action, 1)) # new state, action, cost
 
         return successors
