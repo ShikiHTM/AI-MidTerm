@@ -1,13 +1,11 @@
-from map import Map, State
-from UCS import UCS
+from Solver.map import Map
+from Solver.state import State
+from Solver.SearchStrategy import UCS, Astar
+from Solver.benchmark import benchmark
 
-m = Map('./Solver/input.txt')
-m.print()
+static_map = Map("Solver/input.txt")
+print(static_map)
+initial_state = State(static_map.agent_pos, static_map.boxes_pos)
 
-init_state = State(m.agent_pos, m.boxes_pos)
-
-strategy = UCS()
-result = strategy.search(m, init_state)
-
-print(result)
-print("Node created: %d"%strategy.nodes)
+benchmark(Astar, static_map, initial_state)
+benchmark(UCS, static_map, initial_state)
