@@ -12,10 +12,10 @@ class SearchStrategy:
         self.static_map = static_map
         self.initial_state = initial_state
 
-    def search(self):
-        return {}
+    def search(self) -> GoalState:
+        return GoalState(cost=-1, path=[])
 
-    def __is_deadlock(self, box_pos: Coord):
+    def __is_in_corner(self, box_pos: Coord):
         if box_pos in self.static_map.goals:
             return False
 
@@ -37,14 +37,14 @@ class SearchStrategy:
         """
         successors: list[Successor] = []
 
-        dir = {
+        directions = {
             "North": (0, -1),
             "South": (0, 1),
             "West": (-1, 0),
             "East": (1, 0)
         }
 
-        for action, (dx, dy) in dir.items():
+        for action, (dx, dy) in directions.items():
             # P'
             next_agent_pos: Coord = Coord(current_state.agent_position.x + dx, current_state.agent_position.y + dy)
 
@@ -52,7 +52,6 @@ class SearchStrategy:
             if next_agent_pos in self.static_map.walls:
                 continue
 
-            new_box_pos = set(current_state.box_positions)
             # If P' is a Box
             if next_agent_pos in current_state.box_positions:
                 # P''
@@ -66,12 +65,15 @@ class SearchStrategy:
                 if next_box_pos in current_state.box_positions:
                     continue
 
-                if self.__is_deadlock(next_box_pos):
+                if self.__is_in_corner(next_box_pos):
                     continue
 
                 # Remove old specific box and add new position
+                new_box_pos = set(current_state.box_positions)
                 new_box_pos.remove(next_agent_pos)
                 new_box_pos.add(next_box_pos)
+            else:
+                new_box_pos = current_state.box_positions
 
             next_state: State = State(next_agent_pos, frozenset(new_box_pos))
             successors.append(Successor(action=action, cost=1, state=next_state))
@@ -155,7 +157,7 @@ class Astar(SearchStrategy):
         return GoalState(cost=-1, path=[])
 
     def __get_distance_by_goal(self, goal: Coord) -> dict:
-        dir = [
+        directions = [
             (-1, 0),
             (1, 0),
             (0, 1),
@@ -171,7 +173,7 @@ class Astar(SearchStrategy):
             curr_cell = queue.popleft()
             curr_dist = distance[curr_cell]
 
-            for dx, dy in dir:
+            for dx, dy in directions:
                 next_cell = Coord(curr_cell.x + dx, curr_cell.y + dy)
 
                 # hitting wall
