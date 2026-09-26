@@ -1,3 +1,5 @@
+from __future__ import annotations  # <-- Add this line at the absolute top
+
 from Solver.EntityDataType import Coord
 from Solver.map import Map
 
