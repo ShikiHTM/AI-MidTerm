@@ -1,12 +1,9 @@
 from dataclasses import dataclass
+from typing import NamedTuple
 
-@dataclass
-class Coord():
+class Coord(NamedTuple):
     x: int
     y: int
-
-    def __hash__(self):
-        return hash((self.x, self.y))
 
 @dataclass
 class GoalState:
