@@ -99,7 +99,8 @@ class SokobanGame:
         self.timer      = 0.0
 
         self.grid.set_matrix(state_to_matrix(self.init_state, self.map_obj))
-        self.camera.center(self.grid.rows, self.grid.cols)
+        # self.camera.center(self.grid.rows, self.grid.cols)
+        # print(self.camera.cell_size)
 
 
     def solve(self, algo_name):
