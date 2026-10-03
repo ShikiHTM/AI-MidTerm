@@ -42,9 +42,10 @@ class HeuristicUtility:
 
             for dx, dy in directions:
                 next_cell = Coord(curr_cell.x + dx, curr_cell.y + dy)
+                next_agent = Coord(next_cell.x + dx, next_cell.y + dy)
 
                 # hitting wall
-                if next_cell in self.static_map.walls:
+                if (next_cell in self.static_map.walls or next_agent in self.static_map.walls):
                     continue
 
                 # already has a distance
