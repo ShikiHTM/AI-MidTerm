@@ -85,7 +85,7 @@ class Grid:
         self.cols = 0
 
         self.sprite = None
-        path = os.path.join(os.path.dirname(__file__), "agent.png")
+        path = os.path.join(os.path.dirname(__file__), "agent.bmp")
         self.sprite = pygame.image.load(path).convert_alpha()
 
     def set_matrix(self, matrix):
