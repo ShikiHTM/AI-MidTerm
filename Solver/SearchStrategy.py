@@ -2,9 +2,10 @@ from Solver.map import Map
 from Solver.EntityDataType import Coord, GoalState
 from Solver.successor_type import Successor
 from Solver.state import State
-from Solver.heuristic import HeuristicTable
+from Solver.heuristic_table import HeuristicUtility
 from collections import deque
 import heapq
+import math
 
 class SearchStrategy:
     def __init__(self, static_map: Map, initial_state: State):
@@ -24,6 +25,13 @@ class SearchStrategy:
         left = Coord(box_pos.x-1, box_pos.y) in self.static_map.walls
         right = Coord(box_pos.x+1, box_pos.y) in self.static_map.walls
         return (up or down) and (left or right)
+
+    # def __get_total_triangle_area(self, agent_pos: Coord) -> float:
+
+    def __is_solvable(self) -> bool:
+        return any(
+            len(self.static_map.boxes_pos) == len(self.static_map.goals),
+        )
 
     def get_successor(self, current_state: State) -> list[Successor]:
         """
@@ -116,12 +124,10 @@ class UCS(SearchStrategy):
 class Astar(SearchStrategy):
     def __init__(self, static_map: Map, initial_state: State):
         super().__init__(static_map, initial_state)
-        self.H: HeuristicTable = HeuristicTable()
-        self.H_cached = {}
-        self.__build_heuristic_data()
+        self.H: HeuristicUtility = HeuristicUtility(static_map)
 
     def search(self) -> GoalState:
-        init_f = self.__get_heuristic(self.initial_state.box_positions)
+        init_f = self.H.get_heuristic(self.initial_state.box_positions)
         init_g = 0
         seq = 0
 
@@ -146,7 +152,7 @@ class Astar(SearchStrategy):
                 new_g = successor.cost + g
 
                 if next_state not in visited and new_g < best_g.get(next_state, float('inf')):
-                    new_h = self.__get_heuristic(next_state.box_positions)
+                    new_h = self.H.get_heuristic(next_state.box_positions)
                     new_f = new_g + new_h
                     seq += 1
                     new_path = path + [successor.action]
@@ -155,54 +161,3 @@ class Astar(SearchStrategy):
                     heapq.heappush(pq, (new_f, seq, new_g, next_state, new_path))
 
         return GoalState(cost=-1, path=[])
-
-    def __get_distance_by_goal(self, goal: Coord) -> dict:
-        directions = [
-            (-1, 0),
-            (1, 0),
-            (0, 1),
-            (0, -1)
-        ]
-
-        queue = deque([goal])
-        distance = {goal: 0}
-
-        self.H.add_distance(goal, goal, 0)
-
-        while queue:
-            curr_cell = queue.popleft()
-            curr_dist = distance[curr_cell]
-
-            for dx, dy in directions:
-                next_cell = Coord(curr_cell.x + dx, curr_cell.y + dy)
-
-                # hitting wall
-                if next_cell in self.static_map.walls:
-                    continue
-
-                # already has a distance
-                if next_cell in distance:
-                    continue
-
-                distance[next_cell] = curr_dist + 1
-                queue.append(next_cell)
-
-        return distance
-
-    def __build_heuristic_data(self):
-        for goal in self.static_map.goals:
-            distance = self.__get_distance_by_goal(goal)
-            for box_pos, dist in distance.items():
-                self.H.add_distance(goal, box_pos, dist)
-
-    def __get_heuristic(self, box_positions: frozenset[Coord]) -> float:
-        if box_positions in self.H_cached:
-            return self.H_cached[box_positions]
-
-        total_h = 0
-        for box in box_positions:
-            min_dist = min((self.H.get_distance(goal, box) for goal in self.static_map.goals), default=float('inf'))
-            total_h = total_h + min_dist
-
-        self.H_cached[box_positions] = total_h
-        return total_h

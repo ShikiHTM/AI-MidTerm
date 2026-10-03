@@ -1,9 +1,9 @@
 import os
-from Solver.EntityDataType import Coord
+from Adversarial.EntityDataType import Coord, Agent
 
 class Map:
     def __init__(self, filename):
-        self.agent_pos: Coord = None
+        self.agents_pos: list[Agent] = []
         self.boxes_pos: set[Coord] = set()
 
         self.width: int = 0
@@ -13,13 +13,6 @@ class Map:
         self.goals: set[Coord] = set()
 
         self.load_from_file(filename)
-
-    def __str__(self):
-        res = 'Agent Pos: (%d, %d), Num of boxes: %d\nHeight: %d, Width: %d'%(self.agent_pos.x, self.agent_pos.y, len(self.boxes_pos), self.height, self.width)
-        return res
-
-    def print(self):
-        print(str(self))
 
     def get_map_area(self) -> float:
         return self.width * self.height
@@ -59,7 +52,8 @@ class Map:
                 if char == '%':
                     self.walls.add(curr_pos)
                 elif char == 'A':
-                    self.agent_pos = curr_pos
+                    is_first_agent = (len(self.agents_pos) == 0)
+                    self.agents_pos.append(Agent(position=curr_pos, is_max=is_first_agent))
                 elif char == 'B':
                     self.boxes_pos.add(curr_pos)
                 elif char == 'D':

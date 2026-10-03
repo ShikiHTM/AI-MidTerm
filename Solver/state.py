@@ -13,3 +13,6 @@ class State:
 
     def __hash__(self):
         return hash((self.agent_position, self.box_positions))
+
+    def is_game_over(self, map: Map) -> bool:
+        return self.box_positions == map.goals
