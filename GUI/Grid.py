@@ -31,10 +31,10 @@ class Camera:
         )
 
     def center(self, rows, cols):
-        w = cols * self.cell_size
+        w = rows * self.cell_size
         h = cols * self.cell_size
-        self.x = self.viewport.x + (self.viewport.width - w) // 2
-        self.y = self.viewport.y + (self.viewport.height - h) // 2
+        self.x = self.viewport.x + (self.viewport.width - w) / 2
+        self.y = self.viewport.y + (self.viewport.height - h) / 2
 
     def zoom(self, zoom_in):
         old = self.cell_size
