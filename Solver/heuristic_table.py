@@ -80,6 +80,7 @@ class HeuristicUtility:
             return 0
 
         INF = float('inf')
+        IMPOSSIBLE = 10**9
 
         # Build cost matrix: cost[i][j] = distance from boxes[i] to goals[j]
         # 1-indexed for the algorithm, so cost[0][*] is unused
@@ -88,8 +89,7 @@ class HeuristicUtility:
             for j in range(1, n + 1):
                 cost[i][j] = self.H.get_distance(goals[j - 1], boxes[i - 1])
                 if cost[i][j] == INF:
-                    # Box can't reach this goal — use a large finite value
-                    cost[i][j] = 10**9
+                    cost[i][j] = IMPOSSIBLE
 
         # Hungarian Algorithm (O(n³) from cp-algorithms)
         # u[i] = potential for row i, v[j] = potential for column j
@@ -141,6 +141,9 @@ class HeuristicUtility:
 
         # The optimal cost is -v[0]
         total_h = -v[0]
+
+        if total_h >= IMPOSSIBLE:
+            total_h = INF
 
         self.H_cached[box_positions] = total_h
         return total_h
