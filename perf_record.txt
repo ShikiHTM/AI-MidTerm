@@ -1,44 +1,39 @@
 Astar:
 
-Map 0:
- - Amount of nodes generated: 148
- - Execution time: 0.0010049000011349563
-
 Map 1:
- - Amount of nodes generated: 7005
- - Execution time: 0.05089349999980186
+ - Amount of nodes generated: 148
+ - Execution time: 0.004402800001116702
+ - Ram used (MB): 0.049204
 
 Map 2:
- - Amount of nodes generated: 1781
- - Execution time: 0.010828099999343976
+ - Amount of nodes generated: 7005
+ - Execution time: 0.2063873999977659
+ - Ram used (MB): 2.499368
 
 Map 3:
- - Amount of nodes generated: 649294
- - Execution time: 6.650254300002416
-
-Map 4:
- - Amount of nodes generated: 3789005
- - Execution time: 56.85364850000042
+ - Amount of nodes generated: 1781
+ - Execution time: 0.042670999999245396
+ - Ram used (MB): 0.561796
 
 UCS:
 
-Map 0:
- - Amount of nodes generated: 239
- - Execution time: 0.0009070000014617108
-
 Map 1:
- - Amount of nodes generated: 14738
- - Execution time: 0.06469500000093831
+ - Amount of nodes generated: 239
+ - Execution time: 0.0036220000001776498
+ - Ram used (MB): 0.050144
 
 Map 2:
- - Amount of nodes generated: 2168
- - Execution time: 0.009117300000070827
+ - Amount of nodes generated: 14738
+ - Execution time: 0.24884860000020126
+ - Ram used (MB): 2.764952
 
 Map 3:
- - Amount of nodes generated: 1359534
- - Execution time: 10.289810400001443
+ - Amount of nodes generated: 2168
+ - Execution time: 0.03494180000052438
+ - Ram used (MB): 0.482372
 
-Map 4:
- - Amount of nodes generated: 6579290
- - Execution time: 76.76292939999985
+--- Averages ---
 
+ - Average ratio of the number of nodes generated between Astar and UCS: 0.6386810891437161
+ - Average ratio of execution time between Astar and UCS: 1.0887143214433437
+ - Average ratio of memory between Astar and UCS: 1.0166177492871105

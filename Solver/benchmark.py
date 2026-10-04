@@ -1,4 +1,5 @@
 import time
+import tracemalloc
 from Solver.EntityDataType import GoalState
 
 def benchmark(strategy_class, map_obj, initial_state, display=True):
@@ -6,6 +7,7 @@ def benchmark(strategy_class, map_obj, initial_state, display=True):
     solver = strategy_class(map_obj, initial_state)
     
     # Đo thời gian bắt đầu
+    tracemalloc.start() # later addition, checks for ram usage for space complexity
     start_time = time.perf_counter()
     
     # Chạy thuật toán (giả sử hàm search trả về (cost, path))
@@ -13,6 +15,9 @@ def benchmark(strategy_class, map_obj, initial_state, display=True):
     
     # Đo thời gian kết thúc
     end_time = time.perf_counter()
+
+    current_mem, peak_mem = tracemalloc.get_traced_memory() 
+    tracemalloc.stop() # ends mem tracing
     
     execution_time = end_time - start_time
     
@@ -32,5 +37,6 @@ def benchmark(strategy_class, map_obj, initial_state, display=True):
         "nodes": solver.nodes,
         "cost": result.cost,
         "path": result.path,
-        "time": execution_time
+        "time": execution_time,
+        "p_mem": peak_mem
     }
