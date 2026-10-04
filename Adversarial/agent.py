@@ -2,6 +2,7 @@ from Solver.EntityDataType import Coord
 from Solver.SearchStrategy import SearchStrategy
 from Solver.map import Map
 from Solver.state import State
+import copy
 
 class Agent:
     def __init__(self, id: str, search_strategy: type['SearchStrategy'], static_map: Map):
@@ -22,17 +23,34 @@ class Agent:
             self.static_map.walls.add(opponent_pos)
             is_opponent_added = True
 
-        initial_state = State(agent_position=current_pos, box_positions=frozenset(box_positions))
-        search_solver = self.search_strategy(self.static_map, initial_state)
-
-        self._expected_box_positions = set(box_positions)
-        goal_state = search_solver.search()
+        best_path = []
+        
+        unsolved_boxes = [b for b in box_positions if b not in self.static_map.goals]
+        
+        for target_box in unsolved_boxes:
+            for target_goal in self.static_map.goals:
+                if target_goal in box_positions: 
+                    continue
+                    
+                fake_map = copy.copy(self.static_map)
+                fake_map.goals = {target_goal}
+                
+                fake_state = State(agent_position=current_pos, box_positions=frozenset({target_box}))
+                
+                search_solver = self.search_strategy(fake_map, fake_state)
+                goal_state = search_solver.search()
+                
+                if goal_state and goal_state.path:
+                    if not best_path or len(goal_state.path) < len(best_path):
+                        best_path = goal_state.path
 
         if is_opponent_added:
             self.static_map.walls.remove(opponent_pos)
 
-        if goal_state.path:
-            self.current_path = goal_state.path
+        self._expected_box_positions = set(box_positions)
+        
+        if best_path:
+            self.current_path = best_path
             return self.current_path.pop(0)
         else:
             return "Stay"
