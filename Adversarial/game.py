@@ -4,7 +4,7 @@ from typing import Tuple
 from Solver.EntityDataType import Coord
 from Solver.map import Map
 from Adversarial.agent import Agent
-from Adversarial.game_state import EndGameState, Step, AgentProps
+from Adversarial.game_state import EndGameState, Step, AgentProps, PushedBy
 import random
 from datetime import datetime
 
@@ -79,20 +79,28 @@ class CompetitiveEnvironment:
             
         # 4. Handle box movements and ownership
         new_boxes = set(self.boxes)
+
+        box_pushed: list[PushedBy] = []
         
         if push1_target and not conflict1:
             new_boxes.remove(next1)
             new_boxes.add(push1_target)
-            if push1_target in self.shared_map.goals:
-                self.box_owners[push1_target] = self.agent1.id
+            self.box_owners[push1_target] = self.agent1.id
+            box_pushed.append(PushedBy(
+                box_position=push1_target,
+                agent_id=self.agent1.id
+            ))
             if next1 in self.box_owners:
                 del self.box_owners[next1]
                 
         if push2_target and not conflict2:
             new_boxes.remove(next2)
             new_boxes.add(push2_target)
-            if push2_target in self.shared_map.goals:
-                self.box_owners[push2_target] = self.agent2.id
+            self.box_owners[push2_target] = self.agent2.id
+            box_pushed.append(PushedBy(
+                box_position=push2_target,
+                agent_id=self.agent2.id
+            ))
             if next2 in self.box_owners:
                 del self.box_owners[next2]
                 
@@ -115,6 +123,7 @@ class CompetitiveEnvironment:
             box_positions=frozenset(self.boxes),
             primary_agent= props_1,
             secondary_agent= props_2,
+            box_pushed=box_pushed
         )
         
         

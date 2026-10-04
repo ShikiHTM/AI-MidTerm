@@ -12,8 +12,14 @@ class AgentProps:
     action: str
 
 @dataclass
+class PushedBy:
+    box_position: Coord
+    agent_id: int
+
+@dataclass
 class Step:
     at: int
     primary_agent: AgentProps
     secondary_agent: AgentProps
     box_positions: frozenset[Coord]
+    box_pushed: list[PushedBy]
