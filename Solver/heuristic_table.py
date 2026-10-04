@@ -79,16 +79,15 @@ class HeuristicUtility:
         if box_positions in self.H_cached:
             return self.H_cached[box_positions]
 
-        sum_box_to_goal = 0
+        for box in box_positions:
+            if self.is_dead_square[box.y][box.x]:
+                self.H_cached[box_positions] = float('inf')
+                return float('inf')
+
+        total_h = 0
         for box in box_positions:
             min_dist = min((self.H.get_distance(goal, box) for goal in self.static_map.goals), default=float('inf'))
-            sum_box_to_goal = sum_box_to_goal + min_dist
+            total_h = total_h + min_dist
 
-        sum_goal_to_box = 0
-        for goal in self.static_map.goals:
-            min_dist = min((self.H.get_distance(goal, box) for box in box_positions), default=float('inf'))
-            sum_goal_to_box = sum_goal_to_box + min_dist
-
-        total_h = max(sum_box_to_goal, sum_goal_to_box)
         self.H_cached[box_positions] = total_h
         return total_h
