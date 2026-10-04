@@ -75,90 +75,20 @@ class HeuristicUtility:
             for box_pos, dist in distance.items():
                 self.H.add_distance(goal, box_pos, dist)
 
-    def __calculate_heuristic(self, box_positions: frozenset[Coord]) -> float:
-        boxes = list(box_positions)
-        goals = list(self.static_map.goals)
-        n = len(boxes)
-
-        if n == 0:
-            self.H_cached[box_positions] = 0
-            return 0
-
-        INF = float('inf')
-        IMPOSSIBLE = 10**9
-
-        # Build a square cost matrix of size = max(#boxes, #goals)
-        m = len(goals)
-        size = max(n, m)
-        cost = [[0] * (size + 1) for _ in range(size + 1)]
-        # Fill real distances; missing entries stay INF
-        for i in range(1, n + 1):
-            for j in range(1, m + 1):
-                cost[i][j] = self.H.get_distance(goals[j - 1], boxes[i - 1])
-                if cost[i][j] == INF:
-                    cost[i][j] = IMPOSSIBLE
-
-        u = [0] * (n + 1)
-        v = [0] * (n + 1)
-        p = [0] * (n + 1)
-        way = [0] * (n + 1)
-
-        for i in range(1, n + 1):
-            p[0] = i
-            j0 = 0
-            minv = [INF] * (n + 1)
-            used = [False] * (n + 1)
-
-            while True:
-                used[j0] = True
-                i0 = p[j0]
-                delta = INF
-                j1 = -1
-
-                for j in range(1, n + 1):
-                    if not used[j]:
-                        cur = cost[i0][j] - u[i0] - v[j]
-                        if cur < minv[j]:
-                            minv[j] = cur
-                            way[j] = j0
-                        if minv[j] < delta:
-                            delta = minv[j]
-                            j1 = j
-
-                for j in range(n + 1):
-                    if used[j]:
-                        u[p[j]] += delta
-                        v[j] -= delta
-                    else:
-                        minv[j] -= delta
-
-                j0 = j1
-
-                if p[j0] == 0:
-                    break
-
-            # Unroll augmenting path
-            while j0:
-                j1 = way[j0]
-                p[j0] = p[j1]
-                j0 = j1
-
-        # The optimal cost is -v[0]
-        total_h = -v[0]
-
-        if total_h >= IMPOSSIBLE:
-            total_h = INF
-
-        self.H_cached[box_positions] = total_h
-        return total_h
-
     def get_heuristic(self, box_positions: frozenset[Coord]) -> float:
-        """
-        Compute the heuristic using the Hungarian Algorithm (O(n³)).
-        Finds the minimum-cost perfect matching between boxes and goals,
-        giving a tighter (but still admissible) lower bound than greedy min.
-        """
         if box_positions in self.H_cached:
             return self.H_cached[box_positions]
 
-        return self.__calculate_heuristic(box_positions)
+        sum_box_to_goal = 0
+        for box in box_positions:
+            min_dist = min((self.H.get_distance(goal, box) for goal in self.static_map.goals), default=float('inf'))
+            sum_box_to_goal = sum_box_to_goal + min_dist
+
+        sum_goal_to_box = 0
+        for goal in self.static_map.goals:
+            min_dist = min((self.H.get_distance(goal, box) for box in box_positions), default=float('inf'))
+            sum_goal_to_box = sum_goal_to_box + min_dist
+
+        total_h = max(sum_box_to_goal, sum_goal_to_box)
+        self.H_cached[box_positions] = total_h
+        return total_h
