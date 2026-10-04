@@ -46,11 +46,15 @@ class HeuristicUtility:
         while queue:
             curr_cell = queue.popleft()
             curr_dist = distance[curr_cell]
-            self.is_dead_square[curr_cell.y][curr_cell.x] = False
+            if 0 <= curr_cell.y < len(self.is_dead_square) and 0 <= curr_cell.x < len(self.is_dead_square[0]):
+                self.is_dead_square[curr_cell.y][curr_cell.x] = False
 
             for dx, dy in directions:
                 next_cell = Coord(curr_cell.x + dx, curr_cell.y + dy)
                 next_agent = Coord(next_cell.x + dx, next_cell.y + dy)
+
+                if not (0 <= next_cell.x < self.static_map.width and 0 <= next_cell.y < self.static_map.height):
+                    continue
 
                 # hitting wall
                 if (next_cell in self.static_map.walls or next_agent in self.static_map.walls):
@@ -83,9 +87,13 @@ class HeuristicUtility:
         INF = float('inf')
         IMPOSSIBLE = 10**9
 
-        cost = [[0] * (n + 1) for _ in range(n + 1)]
+        # Build a square cost matrix of size = max(#boxes, #goals)
+        m = len(goals)
+        size = max(n, m)
+        cost = [[0] * (size + 1) for _ in range(size + 1)]
+        # Fill real distances; missing entries stay INF
         for i in range(1, n + 1):
-            for j in range(1, n + 1):
+            for j in range(1, m + 1):
                 cost[i][j] = self.H.get_distance(goals[j - 1], boxes[i - 1])
                 if cost[i][j] == INF:
                     cost[i][j] = IMPOSSIBLE
