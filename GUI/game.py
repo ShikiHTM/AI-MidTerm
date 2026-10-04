@@ -181,5 +181,5 @@ class SokobanGame:
 
 
 if __name__ == "__main__":
-    map_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "./input.txt")
+    map_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input.txt")
     SokobanGame(map_file).run()
