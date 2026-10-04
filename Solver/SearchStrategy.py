@@ -10,7 +10,7 @@ from utils import log_execution_time
 
 
 class SearchStrategy:
-    @log_execution_time
+    # @log_execution_time
     def __init__(self, static_map: Map, initial_state: State):
         self.nodes = 0
         self.static_map = static_map
