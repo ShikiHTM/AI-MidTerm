@@ -10,21 +10,21 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-maps = [] # logs the maps in an array, could be of use later
+maps = []  # logs the maps in an array, could be of use later
 
 static_map: Map
 initial_state: State
 
-A_perf = [] # stores the time and space performance of each run of A star on the 5 maps
-UCS_perf = [] 
+A_perf = []  # stores the time and space performance of each run of A star on the 5 maps
+UCS_perf = []
 
-A_run = [] # perf benchmark of the A star run on current map
+A_run = []  # perf benchmark of the A star run on current map
 UCS_run = []
 
 count = 0
 
 dir = Path("./maps")
-for file in dir.iterdir():    
+for file in dir.iterdir():
     # if count == 3:
     #     break
     # count += 1
@@ -62,28 +62,33 @@ with open("perf_record.txt", "w") as f:
     for i in range(len(A_perf)):
         f.write(
             f"Map {i + 1}:\n - Amount of nodes generated: {A_perf[i]["nodes"]}\n - Execution time: {A_perf[i]["time"]}\n - Ram used (MB): {A_perf[i]["p_mem"]/1000000.0}\n\n"
-            )
+        )
 
     f.write("UCS:\n\n")
     for i in range(len(UCS_perf)):
         f.write(
             f"Map {i + 1}:\n - Amount of nodes generated: {UCS_perf[i]["nodes"]}\n - Execution time: {UCS_perf[i]["time"]}\n - Ram used (MB): {UCS_perf[i]["p_mem"]/1000000.0}\n\n"
-            )
+        )
 
     f.write("--- Averages ---\n\n")
-    f.write(f" - Average ratio of the number of nodes generated between Astar and UCS: {node_ratio}\n")
-    f.write(f" - Average ratio of execution time between Astar and UCS: {time_ratio}\n")
+    f.write(
+        f" - Average ratio of the number of nodes generated between Astar and UCS: {node_ratio}\n")
+    f.write(
+        f" - Average ratio of execution time between Astar and UCS: {time_ratio}\n")
     f.write(f" - Average ratio of memory between Astar and UCS: {mem_ratio}\n")
 
 # plotting
+
+plot_dir = Path(__file__).resolve().parent / "plots"
+plot_dir.mkdir(parents=True, exist_ok=True)
 
 map_names = [f"Map {i}" for i in range(1, len(A_perf) + 1)]
 
 x = np.arange(len(map_names))
 width = 0.35  # bar width
 
-A_mem = [i['p_mem']/1000000.0 for i in A_perf]  
-UCS_mem = [i['p_mem']/1000000.0 for i in UCS_perf]  
+A_mem = [i['p_mem']/1000000.0 for i in A_perf]
+UCS_mem = [i['p_mem']/1000000.0 for i in UCS_perf]
 
 # plots memory used (most correlated to space complexity)
 
@@ -99,16 +104,17 @@ plt.title('Comparison of memory used (space complexity)')
 
 plt.xticks(x, map_names)
 plt.yscale('log')
-plt.legend()  
+plt.legend()
 
 plt.margins(y=0.3)
 plt.tight_layout()
-plt.show()
+plt.savefig(plot_dir / "memory_usage.png")
+plt.close()
 
 # plots time
 
-A_time = [i['time'] for i in A_perf]  
-UCS_time = [i['time'] for i in UCS_perf]  
+A_time = [i['time'] for i in A_perf]
+UCS_time = [i['time'] for i in UCS_perf]
 
 A_bar = plt.bar(x - width/2, A_time, width, label='A*', color='#4f81bd')
 UCS_bar = plt.bar(x + width/2, UCS_time, width, label='UCS', color='#c0504d')
@@ -122,16 +128,17 @@ plt.title('Comparison of execution time')
 
 plt.xticks(x, map_names)
 plt.yscale('log')
-plt.legend()  
+plt.legend()
 
 plt.margins(y=0.3)
 plt.tight_layout()
-plt.show()
+plt.savefig(plot_dir / "execution_time.png")
+plt.close()
 
 # plots nodes
 
-A_nodes = [i['nodes'] for i in A_perf]  
-UCS_nodes = [i['nodes'] for i in UCS_perf]  
+A_nodes = [i['nodes'] for i in A_perf]
+UCS_nodes = [i['nodes'] for i in UCS_perf]
 
 A_bar = plt.bar(x - width/2, A_nodes, width, label='A*', color='#4f81bd')
 UCS_bar = plt.bar(x + width/2, UCS_nodes, width, label='UCS', color='#c0504d')
@@ -145,8 +152,9 @@ plt.title('Comparison of the number of nodes generated')
 
 plt.xticks(x, map_names)
 plt.yscale('log')
-plt.legend()  
+plt.legend()
 
 plt.margins(y=0.3)
 plt.tight_layout()
-plt.show()
+plt.savefig(plot_dir / "generated_nodes.png")
+plt.close()
