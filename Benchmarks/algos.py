@@ -23,8 +23,12 @@ UCS_run = []
 
 count = 0
 
-dir = Path("./maps")
-for file in dir.iterdir():
+maps_dir = Path(__file__).resolve().parent.parent / "maps"
+map_files = sorted(
+    (path for path in maps_dir.iterdir() if path.is_file()),
+    key=lambda path: path.name,
+)
+for file in map_files:
     # if count == 3:
     #     break
     # count += 1
