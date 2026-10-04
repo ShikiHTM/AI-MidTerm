@@ -3,6 +3,7 @@ from Solver.EntityDataType import Coord
 from collections import deque
 from Solver.map import Map
 
+
 @dataclass
 class HeuristicTable:
     table: dict[Coord, dict[Coord, int]] = field(default_factory=dict)
@@ -16,6 +17,7 @@ class HeuristicTable:
     def get_distance(self, goal: Coord, box: Coord) -> int:
         return self.table.get(goal, {}).get(box, float('inf'))
 
+
 class HeuristicUtility:
     def __init__(self, map: Map):
         self.static_map = map
@@ -26,7 +28,8 @@ class HeuristicUtility:
         Q. What are you thinking? __is_dead_square have nothing to do in HeuristicUtility
         A. ikik, but I just want to reuse the BFS function so stfu
         """
-        self.is_dead_square: list[list[bool]] = [[True] * map.width for _ in range(map.height)]
+        self.is_dead_square: list[list[bool]] = [
+            [True] * map.width for _ in range(map.height)]
         self.__build_heuristic_data()
 
     def __get_distance_by_goal(self, goal: Coord) -> dict:
@@ -68,15 +71,7 @@ class HeuristicUtility:
             for box_pos, dist in distance.items():
                 self.H.add_distance(goal, box_pos, dist)
 
-    def get_heuristic(self, box_positions: frozenset[Coord]) -> float:
-        """
-        Compute the heuristic using the Hungarian Algorithm (O(n³)).
-        Finds the minimum-cost perfect matching between boxes and goals,
-        giving a tighter (but still admissible) lower bound than greedy min.
-        """
-        if box_positions in self.H_cached:
-            return self.H_cached[box_positions]
-
+    def __calculate_heuristic(self, box_positions: frozenset[Coord]) -> float:
         boxes = list(box_positions)
         goals = list(self.static_map.goals)
         n = len(boxes)
@@ -94,7 +89,6 @@ class HeuristicUtility:
                 cost[i][j] = self.H.get_distance(goals[j - 1], boxes[i - 1])
                 if cost[i][j] == INF:
                     cost[i][j] = IMPOSSIBLE
-
 
         u = [0] * (n + 1)
         v = [0] * (n + 1)
@@ -149,3 +143,14 @@ class HeuristicUtility:
 
         self.H_cached[box_positions] = total_h
         return total_h
+
+    def get_heuristic(self, box_positions: frozenset[Coord]) -> float:
+        """
+        Compute the heuristic using the Hungarian Algorithm (O(n³)).
+        Finds the minimum-cost perfect matching between boxes and goals,
+        giving a tighter (but still admissible) lower bound than greedy min.
+        """
+        if box_positions in self.H_cached:
+            return self.H_cached[box_positions]
+
+        return self.__calculate_heuristic(box_positions)
