@@ -1,11 +1,10 @@
-import sys
-import os
 import random
 from typing import Tuple
 
 from Solver.EntityDataType import Coord
 from Solver.map import Map
 from Adversarial.agent import Agent
+from Adversarial.game_state import EndGameState, Step, AgentProps
 import random
 from datetime import datetime
 
@@ -56,21 +55,14 @@ class CompetitiveEnvironment:
         dx, dy = directions.get(action, (0, 0))
         return Coord(pos.x + dx, pos.y + dy)
 
-    def step(self):
+    def step(self) -> Step:
         if self.current_step >= self.max_steps or self.is_all_boxes_on_goal():
             self.end_game()
             return
             
         # 1. Get simultaneous actions from both agents
-        # (This will trigger their SearchStrategy to plan paths if needed)
-        print(f"--- Step {self.current_step + 1} ---")
-        print(f"Agent 1 planning...")
         action1 = self.agent1.get_next_action(self.agent1_pos, self.boxes, self.agent2_pos)
-        print(f"Agent 2 planning...")
         action2 = self.agent2.get_next_action(self.agent2_pos, self.boxes, self.agent1_pos)
-        
-        print(f"Agent 1 attempts: {action1}")
-        print(f"Agent 2 attempts: {action2}")
         
         # 2. Determine target coordinates
         next1 = self.resolve_action(self.agent1_pos, action1)
@@ -84,11 +76,6 @@ class CompetitiveEnvironment:
         # 3. Apply moves
         new_pos1 = self.agent1_pos if conflict1 else next1
         new_pos2 = self.agent2_pos if conflict2 else next2
-        
-        if conflict1 and action1 != "Stay":
-            print("Agent 1 action blocked by conflict.")
-        if conflict2 and action2 != "Stay":
-            print("Agent 2 action blocked by conflict.")
             
         # 4. Handle box movements and ownership
         new_boxes = set(self.boxes)
@@ -113,8 +100,23 @@ class CompetitiveEnvironment:
         self.agent2_pos = new_pos2
         self.boxes = new_boxes
         self.current_step += 1
+
+        props_1 = AgentProps(
+            position=self.agent1_pos,
+            action=action1
+        )
+        props_2 = AgentProps(
+            position=self.agent2_pos,
+            action=action2
+        )
+
+        return Step(
+            at=self.current_step,
+            box_positions=frozenset(self.boxes),
+            primary_agent= props_1,
+            secondary_agent= props_2,
+        )
         
-        self.print_state()
         
     def check_conflicts(self, next1: Coord, next2: Coord, push1_target: Coord, push2_target: Coord) -> Tuple[bool, bool]:
         random.seed(datetime.now().second)
@@ -174,28 +176,14 @@ class CompetitiveEnvironment:
     def is_all_boxes_on_goal(self) -> bool:
         return self.boxes.issubset(self.shared_map.goals)
         
-    def end_game(self):
+    def end_game(self) -> EndGameState:
         self.game_over = True
-        print("\n=== Game Over ===")
         score1 = list(self.box_owners.values()).count(self.agent1.id)
         score2 = list(self.box_owners.values()).count(self.agent2.id)
-        print(f"Agent 1 Score: {score1}")
-        print(f"Agent 2 Score: {score2}")
-        
-        if score1 > score2:
-            print("Winner: Agent 1!")
-        elif score2 > score1:
-            print("Winner: Agent 2!")
-        else:
-            print("Draw!")
+
+        result = EndGameState(first_agent_score=score1, second_agent_score=score2)
+        return result
             
-    def print_state(self):
-        print(f"Agent 1 Pos: ({self.agent1_pos.x}, {self.agent1_pos.y}) | Agent 2 Pos: ({self.agent2_pos.x}, {self.agent2_pos.y})")
-        score1 = list(self.box_owners.values()).count(self.agent1.id)
-        score2 = list(self.box_owners.values()).count(self.agent2.id)
-        print(f"Scores -> Agent 1: {score1} | Agent 2: {score2}")
-        
     def run(self):
-        self.print_state()
         while not self.game_over:
             self.step()
