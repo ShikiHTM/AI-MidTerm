@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 import time
@@ -181,5 +182,10 @@ class SokobanGame:
 
 
 if __name__ == "__main__":
-    map_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../input.txt")
+    parser = argparse.ArgumentParser(description="Run the Sokoban solver GUI.")
+    default_map = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "input.txt")
+    parser.add_argument("input_file", nargs="?", default=default_map,
+                        help="path to the Sokoban map file")
+    args = parser.parse_args()
+    map_file = args.input_file
     SokobanGame(map_file).run()
