@@ -117,8 +117,8 @@ plt.close()
 
 # plots time
 
-A_time = [i['time'] * 1000 for i in A_perf]
-UCS_time = [i['time'] * 1000 for i in UCS_perf]
+A_time = [i['time'] for i in A_perf]
+UCS_time = [i['time'] for i in UCS_perf]
 
 A_bar = plt.bar(x - width/2, A_time, width, label='A*', color='#4f81bd')
 UCS_bar = plt.bar(x + width/2, UCS_time, width, label='UCS', color='#c0504d')
@@ -127,10 +127,11 @@ plt.bar_label(A_bar, padding=3, fontsize=9)
 plt.bar_label(UCS_bar, padding=3, fontsize=9)
 
 plt.xlabel('Maps')
-plt.ylabel('Execution time (ms)')
+plt.ylabel('Time')
 plt.title('Comparison of execution time')
 
 plt.xticks(x, map_names)
+plt.yscale('log')
 plt.legend()
 
 plt.margins(y=0.3)
