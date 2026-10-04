@@ -7,6 +7,8 @@ FLOOR    = (235, 237, 240)
 GRIDLINE = (220, 223, 228)
 WALL     = (40, 44, 52)
 BOX      = (105, 72, 48)
+BOX_1      = (186, 48, 85)
+BOX_2      = (48, 120, 179)
 BOX_BD   = (65, 42, 26)
 GOAL     = (185, 45, 45)
 BOXGOAL  = (42, 98, 60)
@@ -31,10 +33,10 @@ class Camera:
         )
 
     def center(self, rows, cols):
-        w = rows * self.cell_size
-        h = cols * self.cell_size
-        self.x = self.viewport.x + (self.viewport.width - w) / 2
-        self.y = self.viewport.y + (self.viewport.height - h) / 2
+        w = cols * self.cell_size
+        h = rows * self.cell_size
+        self.x = int(self.viewport.x + (self.viewport.width - w) / 2)
+        self.y = int(self.viewport.y + (self.viewport.height - h) / 2)
 
     def zoom(self, zoom_in):
         old = self.cell_size
@@ -120,12 +122,17 @@ class Grid:
                     pygame.draw.rect(surface, WALL, sp)
                 elif tile == 'D':
                     pygame.draw.circle(surface, GOAL, (pcx, pcy), max(3, sz / 5))
+                elif tile == 'B_1':
+                    pygame.draw.rect(surface, BOX_1, sp)
+                elif tile == 'B_2':
+                    pygame.draw.rect(surface, BOX_2, sp)
                 elif tile == 'B':
                     pygame.draw.rect(surface, BOX, sp)
                 elif tile == 'C':
                     pygame.draw.rect(surface, BOXGOAL, sp)
-                elif tile in ('A', 'E'):
-                    surface.blit(sprite, (px, py))     
+                elif tile == 'A':
+                    surface.blit(sprite, (px, py))  
+                   
 
                 pygame.draw.rect(surface, GRIDLINE, (px, py, sz, sz), 1)
 

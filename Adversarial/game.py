@@ -57,8 +57,7 @@ class CompetitiveEnvironment:
 
     def step(self) -> Step:
         if self.current_step >= self.max_steps or self.is_all_boxes_on_goal():
-            self.end_game()
-            return
+            return self.end_game()
             
         # 1. Get simultaneous actions from both agents
         action1 = self.agent1.get_next_action(self.agent1_pos, self.boxes, self.agent2_pos)
@@ -195,4 +194,4 @@ class CompetitiveEnvironment:
             
     def run(self):
         while not self.game_over:
-            self.step()
+            print(self.step())

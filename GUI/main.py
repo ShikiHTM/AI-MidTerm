@@ -27,23 +27,21 @@ DIRECTIONS = {
 
 def state_to_matrix(state, static_map):
     matrix = []
+
     for y in range(static_map.height):
-        row = []
+        matrix.append([' '] * (static_map.width + 1))
         for x in range(static_map.width):
             pos = Coord(x, y)
             if pos in static_map.walls:
-                row.append('%')
+                matrix[y][x] = "%"
             elif pos == state.agent_position:
-                # Agent standing on a goal shows 'E', otherwise 'A'
-                row.append('E' if pos in static_map.goals else 'A')
+                matrix[y][x] = 'A'
             elif pos in state.box_positions:
                 # Box on a goal shows 'C', otherwise 'B'
-                row.append('C' if pos in static_map.goals else 'B')
+                # row.append('C' if pos in static_map.goals else 'B')
+                matrix[y][x] = 'C' if pos in static_map.goals else 'B'
             elif pos in static_map.goals:
-                row.append('D')
-            else:
-                row.append(' ')
-        matrix.append(row)
+                matrix[y][x] = 'D'
     return matrix
 
 
