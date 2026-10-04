@@ -12,26 +12,10 @@ class SearchStrategy:
         self.nodes = 0
         self.static_map = static_map
         self.initial_state = initial_state
+        self.H: HeuristicUtility = HeuristicUtility(static_map)
 
     def search(self) -> GoalState:
         return GoalState(cost=-1, path=[])
-
-    def __is_in_corner(self, box_pos: Coord):
-        if box_pos in self.static_map.goals:
-            return False
-
-        up = Coord(box_pos.x, box_pos.y-1) in self.static_map.walls
-        down = Coord(box_pos.x, box_pos.y+1) in self.static_map.walls
-        left = Coord(box_pos.x-1, box_pos.y) in self.static_map.walls
-        right = Coord(box_pos.x+1, box_pos.y) in self.static_map.walls
-        return (up or down) and (left or right)
-
-    # def __get_total_triangle_area(self, agent_pos: Coord) -> float:
-
-    def __is_solvable(self) -> bool:
-        return any(
-            len(self.static_map.boxes_pos) == len(self.static_map.goals),
-        )
 
     def get_successor(self, current_state: State) -> list[Successor]:
         """
@@ -73,7 +57,7 @@ class SearchStrategy:
                 if next_box_pos in current_state.box_positions:
                     continue
 
-                if self.__is_in_corner(next_box_pos):
+                if self.H.is_dead_square[next_box_pos.y][next_box_pos.x]:
                     continue
 
                 # Remove old specific box and add new position
@@ -124,7 +108,6 @@ class UCS(SearchStrategy):
 class Astar(SearchStrategy):
     def __init__(self, static_map: Map, initial_state: State):
         super().__init__(static_map, initial_state)
-        self.H: HeuristicUtility = HeuristicUtility(static_map)
 
     def search(self) -> GoalState:
         init_f = self.H.get_heuristic(self.initial_state.box_positions)

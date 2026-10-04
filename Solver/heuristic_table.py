@@ -21,6 +21,12 @@ class HeuristicUtility:
         self.static_map = map
         self.H: HeuristicTable = HeuristicTable()
         self.H_cached = {}
+
+        """
+        Q. What are you thinking? __is_dead_square have nothing to do in HeuristicUtility
+        A. ikik, but I just want to reuse the BFS function so stfu
+        """
+        self.is_dead_square: list[list[bool]] = [[True] * map.width for _ in range(map.height)]
         self.__build_heuristic_data()
 
     def __get_distance_by_goal(self, goal: Coord) -> dict:
@@ -34,11 +40,10 @@ class HeuristicUtility:
         queue = deque([goal])
         distance = {goal: 0}
 
-        self.H.add_distance(goal, goal, 0)
-
         while queue:
             curr_cell = queue.popleft()
             curr_dist = distance[curr_cell]
+            self.is_dead_square[curr_cell.y][curr_cell.x] = False
 
             for dx, dy in directions:
                 next_cell = Coord(curr_cell.x + dx, curr_cell.y + dy)
@@ -83,8 +88,6 @@ class HeuristicUtility:
         INF = float('inf')
         IMPOSSIBLE = 10**9
 
-        # Build cost matrix: cost[i][j] = distance from boxes[i] to goals[j]
-        # 1-indexed for the algorithm, so cost[0][*] is unused
         cost = [[0] * (n + 1) for _ in range(n + 1)]
         for i in range(1, n + 1):
             for j in range(1, n + 1):
@@ -92,9 +95,7 @@ class HeuristicUtility:
                 if cost[i][j] == INF:
                     cost[i][j] = IMPOSSIBLE
 
-        # Hungarian Algorithm (O(n³) from cp-algorithms)
-        # u[i] = potential for row i, v[j] = potential for column j
-        # p[j] = row assigned to column j (0 = unassigned)
+
         u = [0] * (n + 1)
         v = [0] * (n + 1)
         p = [0] * (n + 1)
