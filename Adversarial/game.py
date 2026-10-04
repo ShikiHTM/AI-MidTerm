@@ -186,8 +186,8 @@ class CompetitiveEnvironment:
         
     def end_game(self) -> EndGameState:
         self.game_over = True
-        score1 = list(self.box_owners.values()).count(self.agent1.id)
-        score2 = list(self.box_owners.values()).count(self.agent2.id)
+        score1 = sum(1 for pos, owner in self.box_owners.items() if owner == self.agent1.id and pos in self.shared_map.goals)
+        score2 = sum(1 for pos, owner in self.box_owners.items() if owner == self.agent2.id and pos in self.shared_map.goals)
 
         result = EndGameState(first_agent_score=score1, second_agent_score=score2)
         return result

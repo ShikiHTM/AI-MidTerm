@@ -215,8 +215,8 @@ class AdversarialSokobanGame:
         self.step_objs.append(res)
         self.states.append(step_to_matrix(res, self.map_obj))
         self.step_times.append(elapsed)
-        s1 = list(self.env.box_owners.values()).count(self.env.agent1.id)
-        s2 = list(self.env.box_owners.values()).count(self.env.agent2.id)
+        s1 = sum(1 for pos, owner in self.env.box_owners.items() if owner == self.env.agent1.id and pos in self.map_obj.goals)
+        s2 = sum(1 for pos, owner in self.env.box_owners.items() if owner == self.env.agent2.id and pos in self.map_obj.goals)
         self.scores.append((s1, s2))
         self.step += 1
         self.grid.set_matrix(self.states[self.step])
