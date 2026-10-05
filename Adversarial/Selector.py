@@ -71,8 +71,9 @@ class UIPanel:
         y += 22
 
         controls = [
-            "Z / X:     Agent 1 (UCS / A*)",
-            "C / V:     Agent 2 (UCS / A*)",
+            "Z / X:     Agent 1 prev / next algo",
+            "C / V:     Agent 2 prev / next algo",
+            "Algorithms: BFS DFS DLS IDS GBFS UCS A*",
             "0 - 9:     Type Max Actions",
             "Backspace: Delete Digit",
             "Space:     Start / Pause",

@@ -79,6 +79,200 @@ class SearchStrategy:
 
         return successors
 
+    def _depth_limited_search(self, depth_limit: int) -> GoalState:
+        if self.initial_state.box_positions == self.static_map.goals:
+            return GoalState(cost=0, path=[])
+
+        frontier = deque([(self.initial_state, 0)])
+        discovered_depth = {self.initial_state: 0}
+        parent = {self.initial_state: (None, None)}
+
+        while frontier:
+            state, depth = frontier.pop()
+            if depth != discovered_depth[state]:
+                continue
+
+            for successor in self.get_successor(state):
+                next_state = successor.state
+                next_depth = depth + 1
+                previous_depth = discovered_depth.get(next_state)
+                if previous_depth is not None and previous_depth <= next_depth:
+                    continue
+
+                discovered_depth[next_state] = next_depth
+                parent[next_state] = (state, successor.action)
+                self.nodes += 1
+
+                if next_state.box_positions == self.static_map.goals:
+                    path = []
+                    curr, action = next_state, successor.action
+
+                    while curr is not None:
+                        path.append(action)
+                        curr, action = parent[curr]
+
+                    path.reverse()
+
+                    return GoalState(cost=len(path), path=path)
+
+                if next_depth < depth_limit:
+                    frontier.append((next_state, next_depth))
+
+        return GoalState(cost=-1, path=[])
+
+
+class BFS(SearchStrategy):
+    def search(self) -> GoalState:
+        if self.initial_state.box_positions == self.static_map.goals:
+            return GoalState(cost=0, path=[])
+
+        frontier = deque([self.initial_state])
+        discovered = []
+
+        parent = {self.initial_state: (None, None)}
+
+        while frontier:
+            state = frontier.popleft()
+            discovered.append(state)
+
+            for successor in self.get_successor(state):
+                next_state = successor.state
+
+                if next_state in discovered or next_state in frontier:
+                    continue
+
+                parent[next_state] = (state, successor.action)
+
+                if next_state.box_positions == self.static_map.goals:
+                    path = []
+                    curr, action = next_state, successor.action
+
+                    while curr is not None:
+                        path.append(action)
+                        curr, action = parent[curr]
+
+                    path.reverse()
+
+                    return GoalState(cost=len(path), path=path)
+
+                self.nodes += 1
+                frontier.append(next_state)
+
+        return GoalState(cost=-1, path=[])
+
+
+class DFS(SearchStrategy):
+    def search(self) -> GoalState:
+        if self.initial_state.box_positions == self.static_map.goals:
+            return GoalState(cost=0, path=[])
+
+        frontier = deque([self.initial_state])
+        discovered = []
+
+        parent = {self.initial_state: (None, None)}
+
+        while frontier:
+            state = frontier.pop()
+            discovered.append(state)
+
+            for successor in self.get_successor(state):
+                next_state = successor.state
+
+                if next_state in discovered or next_state in frontier:
+                    continue
+
+                parent[next_state] = (state, successor.action)
+
+                if next_state.box_positions == self.static_map.goals:
+                    path = []
+                    curr, action = next_state, successor.action
+
+                    while curr is not None:
+                        path.append(action)
+                        curr, action = parent[curr]
+
+                    path.reverse()
+
+                    return GoalState(cost=len(path), path=path)
+
+                self.nodes += 1
+                frontier.append(next_state)
+
+        return GoalState(cost=-1, path=[])
+
+
+class DLS(SearchStrategy):
+    def __init__(
+        self,
+        static_map: Map,
+        initial_state: State,
+        depth_limit: int = 100,
+    ):
+        if depth_limit < 0:
+            raise ValueError("depth_limit must be non-negative")
+        super().__init__(static_map, initial_state)
+        self.depth_limit = depth_limit
+
+    def search(self) -> GoalState:
+        return self._depth_limited_search(self.depth_limit)
+
+
+class IDS(SearchStrategy):
+    def __init__(
+        self,
+        static_map: Map,
+        initial_state: State,
+        max_depth: int = 100,
+        step: int = 5,
+    ):
+        if max_depth < 0:
+            raise ValueError("max_depth must be non-negative")
+        super().__init__(static_map, initial_state)
+        self.max_depth = max_depth
+        self.step = step
+
+    def search(self) -> GoalState:
+        for depth_limit in range(self.max_depth + self.step):
+            result = self._depth_limited_search(depth_limit)
+            if result.cost != -1:
+                return result
+        return GoalState(cost=-1, path=[])
+
+
+class GBFS(SearchStrategy):
+    def search(self) -> GoalState:
+        initial_h = self.H.get_heuristic(self.initial_state.box_positions)
+        if math.isinf(initial_h):
+            return GoalState(cost=-1, path=[])
+
+        seq = 0
+        frontier = [(initial_h, seq, self.initial_state, [])]
+        discovered = {self.initial_state}
+
+        while frontier:
+            _, _, state, path = heapq.heappop(frontier)
+            if state.box_positions == self.static_map.goals:
+                return GoalState(cost=len(path), path=path)
+
+            for successor in self.get_successor(state):
+                next_state = successor.state
+                if next_state in discovered:
+                    continue
+
+                heuristic = self.H.get_heuristic(next_state.box_positions)
+                if math.isinf(heuristic):
+                    continue
+
+                discovered.add(next_state)
+                self.nodes += 1
+                seq += 1
+                heapq.heappush(
+                    frontier,
+                    (heuristic, seq, next_state, path + [successor.action]),
+                )
+
+        return GoalState(cost=-1, path=[])
+
 
 class UCS(SearchStrategy):
     def __init__(self, static_map: Map, initial_state: State):
