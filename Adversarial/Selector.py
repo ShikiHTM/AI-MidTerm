@@ -13,7 +13,7 @@ class UIPanel:
         self.font       = pygame.font.SysFont("Arial", 17)
         self.small_font = pygame.font.SysFont("Arial", 15)
 
-    def draw(self, surface, algo1, algo2, step, total_steps, score1=0, score2=0, is_game_over=False, game_started=False, max_actions_str="100", step_time=None):
+    def draw(self, surface, algo1, algo2, step, total_steps, score1=0, score2=0, is_game_over=False, game_started=False, max_actions_str="100", step_time=None, max_step_time=None):
         # Draw panel background
         pygame.draw.rect(surface, PANEL_BG, self.rect)
         x = self.x
@@ -54,6 +54,18 @@ class UIPanel:
         else:
             time_str = "Step Time: --"
         surface.blit(self.font.render(time_str, True, TEXT), (x, y))
+        y += 20
+
+        if game_started and max_step_time is not None:
+            if max_step_time < 0.001:
+                max_time_str = "Max Step Time: <1 ms"
+            elif max_step_time < 1.0:
+                max_time_str = f"Max Step Time: {max_step_time * 1000:.1f} ms"
+            else:
+                max_time_str = f"Max Step Time: {max_step_time:.3f} s"
+        else:
+            max_time_str = "Max Step Time: --"
+        surface.blit(self.font.render(max_time_str, True, TEXT), (x, y))
         y += 26
 
         # 5. Goals scored by each agent
@@ -74,6 +86,8 @@ class UIPanel:
             "Z / X:     Agent 1 prev / next algo",
             "C / V:     Agent 2 prev / next algo",
             "Algorithms: BFS DFS DLS IDS GBFS UCS A*",
+            "Agent 1: orange | Agent 2: blue",
+            "Box triangle color = owner",
             "0 - 9:     Type Max Actions",
             "Backspace: Delete Digit",
             "Space:     Start / Pause",

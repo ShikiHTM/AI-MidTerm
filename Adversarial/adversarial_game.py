@@ -36,16 +36,16 @@ ALGORITHMS: tuple[tuple[str, type[SearchStrategy]], ...] = (
 )
 
 
-def step_to_matrix(step: Step, static_map: Map):
+def step_to_matrix(
+    step: Step,
+    static_map: Map,
+    box_owners: dict[Coord, str] | None = None,
+):
     matrix = []
 
     agent_a = step.primary_agent
     agent_b = step.secondary_agent
-
-    pushed_boxes = step.box_pushed
-    pushed_pos: list[Coord] = []
-    if len(pushed_boxes) > 0:
-        pushed_pos = [b.box_position for b in pushed_boxes]
+    box_owners = box_owners or {}
 
     for y in range(static_map.height):
         matrix.append([' '] * static_map.width)
@@ -53,22 +53,21 @@ def step_to_matrix(step: Step, static_map: Map):
             pos = Coord(x, y)
             if pos in static_map.walls:
                 matrix[y][x] = "%"
-            elif (pos == agent_a.position) or (pos == agent_b.position):
-                matrix[y][x] = 'A'
-            elif pos in pushed_pos:
-                continue
+            elif pos == agent_a.position:
+                matrix[y][x] = "A_1"
+            elif pos == agent_b.position:
+                matrix[y][x] = "A_2"
             elif pos in step.box_positions:
-                # Box on a goal shows 'C', otherwise 'B'
-                matrix[y][x] = 'C' if pos in static_map.goals else 'B'
+                on_goal = pos in static_map.goals
+                owner = box_owners.get(pos)
+                if owner in ("Agent 1", "Agent_1", 1):
+                    matrix[y][x] = "C_1" if on_goal else "B_1"
+                elif owner in ("Agent 2", "Agent_2", 2):
+                    matrix[y][x] = "C_2" if on_goal else "B_2"
+                else:
+                    matrix[y][x] = "C" if on_goal else "B"
             elif pos in static_map.goals:
                 matrix[y][x] = 'D'
-
-    if len(pushed_pos) > 0:
-        for b in pushed_boxes:
-            if b.agent_id in ("Agent_1", "Agent 1", 1):
-                matrix[b.box_position.y][b.box_position.x] = "B_1"
-            else:
-                matrix[b.box_position.y][b.box_position.x] = "B_2"
 
     return matrix
 
@@ -132,6 +131,7 @@ class AdversarialSokobanGame:
         self.step_objs    = [self.init_step]
         self.scores       = [(0, 0)]
         self.step_times   = [None]   # Execution time for each step
+        self.max_step_time = None
         self.final_scores = (0, 0)
         self.step         = 0
 
@@ -149,6 +149,7 @@ class AdversarialSokobanGame:
         self.step_objs = [self.init_step]
         self.scores = [(0, 0)]
         self.step_times = [None]
+        self.max_step_time = None
         self.final_scores = (0, 0)
         self.grid.set_matrix(self.states[0])
         pygame.display.set_caption(f"2-Agent Sokoban - Ready ({self.algo1_name} vs {self.algo2_name})")
@@ -192,6 +193,7 @@ class AdversarialSokobanGame:
         self.step_objs = [self.init_step]
         self.scores = [(0, 0)]
         self.step_times = [None]
+        self.max_step_time = None
         self.final_scores = (0, 0)
         self.step = 0
         self.game_started = True
@@ -235,8 +237,9 @@ class AdversarialSokobanGame:
 
         # Step successfully produced
         self.step_objs.append(res)
-        self.states.append(step_to_matrix(res, self.map_obj))
+        self.states.append(step_to_matrix(res, self.map_obj, self.env.box_owners))
         self.step_times.append(elapsed)
+        self.max_step_time = max(self.max_step_time or 0.0, elapsed)
         s1 = sum(1 for pos, owner in self.env.box_owners.items() if owner == self.env.agent1.id and pos in self.map_obj.goals)
         s2 = sum(1 for pos, owner in self.env.box_owners.items() if owner == self.env.agent2.id and pos in self.map_obj.goals)
         self.scores.append((s1, s2))
@@ -356,7 +359,8 @@ class AdversarialSokobanGame:
                 is_game_over_now,
                 self.game_started,
                 max_actions_str=self.actions_input,
-                step_time=cur_time
+                step_time=cur_time,
+                max_step_time=self.max_step_time,
             )
             pygame.display.flip()
 
