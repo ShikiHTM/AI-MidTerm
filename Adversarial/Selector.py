@@ -14,12 +14,12 @@ class UIPanel:
         self.small_font = pygame.font.SysFont("Arial", 15)
 
     def draw(self, surface, algo1, algo2, step, total_steps, score1=0, score2=0, is_game_over=False, game_started=False, max_actions_str="100", step_time=None):
-        # Draw panel background
+        # draws panel background
         pygame.draw.rect(surface, PANEL_BG, self.rect)
         x = self.x
         y = self.rect.y + 16
 
-        # 1. Algorithm selection display
+        # displays algorithm
         surface.blit(self.big_font.render("Algorithms", True, TEXT), (x, y))
         y += 24
         surface.blit(self.font.render(f"Agent 1 (Z/X):  {algo1}", True, TEXT), (x, y))
@@ -27,17 +27,17 @@ class UIPanel:
         surface.blit(self.font.render(f"Agent 2 (C/V):  {algo2}", True, TEXT), (x, y))
         y += 26
 
-        # 2. Max actions display (real-time input)
+        # max action
         actions_display = max_actions_str if max_actions_str else "_"
         surface.blit(self.big_font.render(f"Max Actions: {actions_display}", True, TEXT), (x, y))
         y += 28
 
-        # 3. Total actions count
+        # total actions
         text = f"Total Actions: {total_steps}" if game_started else "Total Actions: --"
         surface.blit(self.big_font.render(text, True, TEXT), (x, y))
         y += 28
 
-        # 4. Playback counter & execution time per step
+        # playback
         surface.blit(self.big_font.render("Playback", True, TEXT), (x, y))
         y += 22
         text = f"Step {step} / {total_steps}" if game_started else "Step -- / --"
@@ -56,7 +56,7 @@ class UIPanel:
         surface.blit(self.font.render(time_str, True, TEXT), (x, y))
         y += 26
 
-        # 5. Goals scored by each agent
+        # goals scored
         surface.blit(self.big_font.render("Goals Scored", True, TEXT), (x, y))
         y += 22
         text_occ1 = f"Agent 1: {score1}" if game_started else "Agent 1: --"
@@ -66,7 +66,7 @@ class UIPanel:
         surface.blit(self.font.render(text_occ2, True, TEXT), (x, y))
         y += 26
 
-        # 6. Controls display
+        # controls
         surface.blit(self.big_font.render("Controls", True, TEXT), (x, y))
         y += 22
 
@@ -87,7 +87,7 @@ class UIPanel:
 
         y += 14
 
-        # 7. Status / End game announcement
+        # announces the end of the game
         if is_game_over:
             surface.blit(self.title_font.render("Game Over", True, TEXT), (x, y))
             y += 26

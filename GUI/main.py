@@ -4,10 +4,10 @@ import sys
 import time
 import pygame
 
-# ddd project root to sys.path, fixes import bugs i dont know why imports run relative to the dir path in the terminal 
-root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if root not in sys.path:
-    sys.path.insert(0, root)
+# # ddd project root to sys.path, fixes import bugs i dont know why imports run relative to the dir path in the terminal 
+# root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# if root not in sys.path:
+#     sys.path.insert(0, root)
 
 from Solver.map import Map
 from Solver.state import State
@@ -37,8 +37,6 @@ def state_to_matrix(state, static_map):
             elif pos == state.agent_position:
                 matrix[y][x] = 'A'
             elif pos in state.box_positions:
-                # Box on a goal shows 'C', otherwise 'B'
-                # row.append('C' if pos in static_map.goals else 'B')
                 matrix[y][x] = 'C' if pos in static_map.goals else 'B'
             elif pos in static_map.goals:
                 matrix[y][x] = 'D'
@@ -55,7 +53,7 @@ def build_history(init_state, static_map, path):
                           current.agent_position.y + dy)
         boxes = set(current.box_positions)
 
-        # If the agent walks into a box, push it one cell further
+        # if the agent walks into a box, push it one cell further
         if new_agent in boxes:
             boxes.remove(new_agent)
             boxes.add(Coord(new_agent.x + dx, new_agent.y + dy))
@@ -69,7 +67,6 @@ def build_history(init_state, static_map, path):
 class SokobanGame:
     def __init__(self, map_path, width=1100, height=700):
         pygame.init()
-        pygame.display.set_caption("Sokoban Solver")
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
 
@@ -92,18 +89,14 @@ class SokobanGame:
         self.nodes      = 0
         self.time_spent = 0.0
 
-        # Playback
         self.playing    = False
         self.step_delay = 0.22     # seconds between auto-play steps
         self.timer      = 0.0
 
         self.grid.set_matrix(state_to_matrix(self.init_state, self.map_obj))
-        # self.camera.center(self.grid.rows, self.grid.cols)
-        # print(self.camera.cell_size)
 
 
     def solve(self, algo_name):
-        """Run the chosen search algorithm and store the result."""
         self.algorithm = algo_name
         self.playing = False
 
@@ -180,10 +173,5 @@ class SokobanGame:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Run the Sokoban solver GUI.")
-    default_map = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "input.txt")
-    parser.add_argument("input_file", nargs="?", default=default_map,
-                        help="path to the Sokoban map file")
-    args = parser.parse_args()
-    map_file = args.input_file
-    SokobanGame(map_file).run()
+    map = "./input.txt"
+    SokobanGame(map).run()
