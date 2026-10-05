@@ -12,63 +12,42 @@ from Solver.map import Map
 
 
 @dataclass(frozen=True)
-class AdmissibilityViolation:
-    state: State
-    heuristic: float
-    optimal_cost: float
-
-
-@dataclass(frozen=True)
-class ConsistencyViolation:
-    state: State
-    successor: State
-    heuristic: float
-    successor_heuristic: float
-    transition_cost: int
-
-
-@dataclass(frozen=True)
 class HeuristicCheckResult:
     states_checked: int
     transitions_checked: int
-    admissibility_violations: tuple[AdmissibilityViolation, ...]
-    consistency_violations: tuple[ConsistencyViolation, ...]
-
-    @property
-    def is_admissible(self) -> bool:
-        return not self.admissibility_violations
-
-    @property
-    def is_consistent(self) -> bool:
-        return not self.consistency_violations
+    is_admissible: bool
+    is_consistent: bool
 
 
 def check_heuristic(
     static_map: Map, initial_state: State
 ) -> HeuristicCheckResult:
     strategy = SearchStrategy(static_map, initial_state)
+
     graph: dict[State, list[tuple[State, int]]] = {}
     reverse_graph: dict[State, list[tuple[State, int]]] = {}
-    pending = [initial_state]
+    frontier = [initial_state]
     discovered = {initial_state}
 
-    while pending:
-        state = pending.pop()
-        successors = strategy.get_successor(state)
+    while frontier:
+        state = frontier.pop()
         graph[state] = []
 
-        for successor in successors:
+        for successor in strategy.get_successor(state):
             next_state = successor.state
+
             graph[state].append((next_state, successor.cost))
             reverse_graph.setdefault(next_state, []).append(
                 (state, successor.cost)
             )
+
             if next_state not in discovered:
                 discovered.add(next_state)
-                pending.append(next_state)
+                frontier.append(next_state)
 
     optimal_costs: dict[State, float] = {}
     queue: list[tuple[float, int, State]] = []
+    
     sequence = 0
     for state in discovered:
         if state.box_positions == static_map.goals:
@@ -93,37 +72,28 @@ def check_heuristic(
         for state in discovered
     }
 
-    admissibility_violations = []
-    for state, heuristic in heuristic_values.items():
-        optimal_cost = optimal_costs.get(state, math.inf)
-        if heuristic > optimal_cost:
-            admissibility_violations.append(
-                AdmissibilityViolation(state, heuristic, optimal_cost)
-            )
-
-    consistency_violations = []
+    is_admissible = True
+    is_consistent = True
     transition_count = 0
+
     for state, successors in graph.items():
         heuristic = heuristic_values[state]
+        optimal_cost = optimal_costs.get(state, math.inf)
+
+        if heuristic > optimal_cost:
+            is_admissible = False
+
         for successor, transition_cost in successors:
             transition_count += 1
             successor_heuristic = heuristic_values[successor]
             if heuristic > transition_cost + successor_heuristic:
-                consistency_violations.append(
-                    ConsistencyViolation(
-                        state,
-                        successor,
-                        heuristic,
-                        successor_heuristic,
-                        transition_cost,
-                    )
-                )
+                is_consistent = False
 
     return HeuristicCheckResult(
         states_checked=len(discovered),
         transitions_checked=transition_count,
-        admissibility_violations=tuple(admissibility_violations),
-        consistency_violations=tuple(consistency_violations),
+        is_admissible=is_admissible,
+        is_consistent=is_consistent,
     )
 
 
@@ -144,19 +114,3 @@ if __name__ == "__main__":
     print(f"Transitions checked: {result.transitions_checked}")
     print(f"Admissible: {'YES' if result.is_admissible else 'NO'}")
     print(f"Consistent: {'YES' if result.is_consistent else 'NO'}")
-
-    for violation in result.admissibility_violations:
-        print(
-            "Admissibility violation: "
-            f"h={violation.heuristic}, optimal_cost={violation.optimal_cost}, "
-            f"agent={violation.state.agent_position}, "
-        )
-
-    for violation in result.consistency_violations:
-        print(
-            "Consistency violation: "
-            f"h(state)={violation.heuristic}, "
-            f"cost={violation.transition_cost}, "
-            f"h(successor)={violation.successor_heuristic}, "
-            f"agent={violation.state.agent_position}, "
-        )
