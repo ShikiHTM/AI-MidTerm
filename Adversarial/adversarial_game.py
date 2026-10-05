@@ -4,7 +4,7 @@ import pygame
 
 from Solver.map import Map
 from Solver.EntityDataType import Coord
-from Solver.SearchStrategy import UCS, Astar
+from Solver.SearchStrategy import Astar, BFS, DFS, DLS, GBFS, IDS, UCS, SearchStrategy
 from GUI.Grid import Camera, Grid
 from Adversarial.Selector import UIPanel
 from Adversarial.game_state import Step, AgentProps, EndGameState
@@ -17,6 +17,16 @@ DIRECTIONS = {
     "West":  (-1, 0),
     "East":  (1,  0),
 }
+
+ALGORITHMS: tuple[tuple[str, type[SearchStrategy]], ...] = (
+    ("BFS", BFS),
+    ("DFS", DFS),
+    ("DLS", DLS),
+    ("IDS", IDS),
+    ("GBFS", GBFS),
+    ("UCS", UCS),
+    ("Astar", Astar),
+)
 
 
 def step_to_matrix(step: Step, static_map: Map):
@@ -145,6 +155,18 @@ class AdversarialSokobanGame:
 
         self.reset_match_state()
 
+    def cycle_algo(self, agent_num, direction):
+        """Select the previous or next search algorithm for one agent."""
+        selected_algo = self.algo1 if agent_num == 1 else self.algo2
+        current_index = next(
+            (index for index, (_, algo_type) in enumerate(ALGORITHMS)
+             if algo_type is selected_algo),
+            0,
+        )
+        next_index = (current_index + direction) % len(ALGORITHMS)
+        algo_name, algo_type = ALGORITHMS[next_index]
+        self.select_algo(agent_num, algo_type, algo_name)
+
     def start_live_match(self):
         if not self.actions_input or int(self.actions_input) <= 0:
             self.actions_input = "100"
@@ -238,16 +260,17 @@ class AdversarialSokobanGame:
                     continue
 
                 if event.type == pygame.KEYDOWN:
-                    # selects algorithm for each agents
+                    # Agent 1: cycle algorithms with Z / X
                     if event.key == pygame.K_z:
-                        self.select_algo(1, UCS, "UCS")
+                        self.cycle_algo(1, -1)
                     elif event.key == pygame.K_x:
-                        self.select_algo(1, Astar, "Astar")
+                        self.cycle_algo(1, 1)
 
+                    # Agent 2: cycle algorithms with C / V
                     elif event.key == pygame.K_c:
-                        self.select_algo(2, UCS, "UCS")
+                        self.cycle_algo(2, -1)
                     elif event.key == pygame.K_v:
-                        self.select_algo(2, Astar, "Astar")
+                        self.cycle_algo(2, 1)
 
                     # lets user input max action count
                     elif event.unicode.isdigit():
