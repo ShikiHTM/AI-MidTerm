@@ -6,18 +6,15 @@ from Solver.heuristic_table import HeuristicUtility
 from collections import deque
 import heapq
 import math
-from utils import log_execution_time
 
 
 class SearchStrategy:
-    # @log_execution_time
     def __init__(self, static_map: Map, initial_state: State):
         self.nodes = 0
         self.static_map = static_map
         self.initial_state = initial_state
         self.H: HeuristicUtility = HeuristicUtility(static_map)
 
-    @log_execution_time
     def search(self) -> GoalState:
         return GoalState(cost=-1, path=[])
 
