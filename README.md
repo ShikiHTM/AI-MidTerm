@@ -7,10 +7,10 @@ python -m Solver.check_heuristic
 
 ## Run single agent on a map
 ```bash
-python -m GUI.main maps/map2.txt 
+python -m GUI.main
 ```
 
 ## Run multi agent
 ```bash
-python -m Adversarial.adversarial_game
+python -m Adversarial_GUI.adversarial_game
 ```
