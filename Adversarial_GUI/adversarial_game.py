@@ -6,7 +6,7 @@ from Solver.map import Map
 from Solver.EntityDataType import Coord
 from Solver.SearchStrategy import Astar, BFS, DFS, DLS, GBFS, IDS, UCS, SearchStrategy
 from GUI.Grid import Camera, Grid
-from Adversarial.Selector import UIPanel
+from Adversarial_GUI.Selector import UIPanel
 from Adversarial.game_state import Step, AgentProps, EndGameState
 from Adversarial.game import CompetitiveEnvironment
 
