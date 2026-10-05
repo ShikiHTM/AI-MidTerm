@@ -4,11 +4,6 @@ import sys
 import time
 import pygame
 
-# # ddd project root to sys.path, fixes import bugs i dont know why imports run relative to the dir path in the terminal 
-# root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# if root not in sys.path:
-#     sys.path.insert(0, root)
-
 from Solver.map import Map
 from Solver.state import State
 from Solver.EntityDataType import Coord

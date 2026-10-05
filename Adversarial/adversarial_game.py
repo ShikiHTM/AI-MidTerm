@@ -128,7 +128,6 @@ class AdversarialSokobanGame:
         self.step         = 0
 
         self.grid.set_matrix(self.states[0])
-        self.camera.center(self.grid.rows, self.grid.cols)
 
     def reset_match_state(self):
         # resets match when the user presses certain keys
@@ -263,13 +262,13 @@ class AdversarialSokobanGame:
                     continue
 
                 if event.type == pygame.KEYDOWN:
-                    # Agent 1: cycle algorithms with Z / X
+                    # cycle algorithms with Z or X for agent 1
                     if event.key == pygame.K_z:
                         self.cycle_algo(1, -1)
                     elif event.key == pygame.K_x:
                         self.cycle_algo(1, 1)
 
-                    # Agent 2: cycle algorithms with C / V
+                    # C or V for agent 2
                     elif event.key == pygame.K_c:
                         self.cycle_algo(2, -1)
                     elif event.key == pygame.K_v:

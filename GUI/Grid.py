@@ -34,12 +34,6 @@ class Camera:
             pygame.K_d
         )
 
-    def center(self, rows, cols):
-        w = cols * self.cell_size
-        h = rows * self.cell_size
-        self.x = int(self.viewport.x + (self.viewport.width - w) / 2)
-        self.y = int(self.viewport.y + (self.viewport.height - h) / 2)
-
     def zoom(self, zoom_in):
         old = self.cell_size
         step = 10 if old < 50 else 15
@@ -130,7 +124,6 @@ class Grid:
         pygame.draw.rect(surface, BG, cam.viewport)
 
         sz = cam.cell_size
-        pad = max(2, int(sz * 0.08))
 
         for i in range(self.rows):
             for j in range(self.cols):
