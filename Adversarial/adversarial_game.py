@@ -1,13 +1,6 @@
-import argparse
-import os
 import sys
 import time
 import pygame
-
-# Add project root to sys.path
-root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if root not in sys.path:
-    sys.path.insert(0, root)
 
 from Solver.map import Map
 from Solver.EntityDataType import Coord
@@ -17,7 +10,7 @@ from Adversarial.Selector import UIPanel
 from Adversarial.game_state import Step, AgentProps, EndGameState
 from Adversarial.game import CompetitiveEnvironment
 
-# Direction vectors for each named action
+# direction vectors for each named action
 DIRECTIONS = {
     "North": (0, -1),
     "South": (0,  1),
@@ -75,7 +68,6 @@ def step_to_matrix(
 class AdversarialSokobanGame:
     def __init__(self, map_path, max_steps=100, width=1100, height=700):
         pygame.init()
-        pygame.display.set_caption("2-Agent Adversarial Sokoban")
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
 
@@ -92,23 +84,23 @@ class AdversarialSokobanGame:
         self.grid   = Grid()
         self.panel  = UIPanel(panel_rect)
 
-        # Selected algorithms for Agent 1 and Agent 2
+        # stores the algorithm selected for agent 1 and 2
         self.algo1 = Astar
         self.algo1_name = "Astar"
         self.algo2 = UCS
         self.algo2_name = "UCS"
 
-        # Live environment reference
+        # environment reference
         self.env = None
 
-        # Playback & state tracking
+        # tracking playback and states
         self.playing      = False
         self.step_delay   = 0.22     # seconds between live steps
         self.timer        = 0.0
         self.game_started = False
         self.is_game_over = False
 
-        # Extract initial agent positions
+        # gets initial agent positions
         agent_positions = []
         with open(map_path) as f:
             for y, line in enumerate(f):
@@ -130,7 +122,7 @@ class AdversarialSokobanGame:
         self.states       = [step_to_matrix(self.init_step, self.map_obj)]
         self.step_objs    = [self.init_step]
         self.scores       = [(0, 0)]
-        self.step_times   = [None]   # Execution time for each step
+        self.step_times   = [None]   # execution time for each step
         self.max_step_time = None
         self.final_scores = (0, 0)
         self.step         = 0
@@ -139,7 +131,7 @@ class AdversarialSokobanGame:
         self.camera.center(self.grid.rows, self.grid.cols)
 
     def reset_match_state(self):
-        """Reset match state when algorithms or max actions are adjusted."""
+        # resets match when the user presses certain keys
         self.env = None
         self.game_started = False
         self.is_game_over = False
@@ -155,7 +147,6 @@ class AdversarialSokobanGame:
         pygame.display.set_caption(f"2-Agent Sokoban - Ready ({self.algo1_name} vs {self.algo2_name})")
 
     def select_algo(self, agent_num, algo_type, algo_name):
-        """Set algorithm choice and prepare for new simulation."""
         if agent_num == 1:
             self.algo1 = algo_type
             self.algo1_name = algo_name
@@ -178,7 +169,6 @@ class AdversarialSokobanGame:
         self.select_algo(agent_num, algo_type, algo_name)
 
     def start_live_match(self):
-        """Initialize the competitive environment for real-time live stepping."""
         if not self.actions_input or int(self.actions_input) <= 0:
             self.actions_input = "100"
             self.max_steps = 100
@@ -202,13 +192,12 @@ class AdversarialSokobanGame:
         self.timer = 0.0
 
     def advance_step(self):
-        """Execute the next live turn, or step forward if viewing past history."""
         if not self.game_started:
             self.start_live_match()
             return
 
-        # If viewing past rewound history, walk forward through recorded frames
-        if self.step < len(self.states) - 1:
+        # goes for the next recorded frame if viewing through history 
+        if self.step < (len(self.states) - 1):
             self.step += 1
             self.grid.set_matrix(self.states[self.step])
             return
@@ -217,7 +206,7 @@ class AdversarialSokobanGame:
             self.playing = False
             return
 
-        # Execute next step live in the environment and measure execution time
+        # executes step, records time 
         t0 = time.perf_counter()
         res = self.env.step()
         elapsed = time.perf_counter() - t0
@@ -235,7 +224,6 @@ class AdversarialSokobanGame:
             pygame.display.set_caption(caption)
             return
 
-        # Step successfully produced
         self.step_objs.append(res)
         self.states.append(step_to_matrix(res, self.map_obj, self.env.box_owners))
         self.step_times.append(elapsed)
@@ -247,13 +235,11 @@ class AdversarialSokobanGame:
         self.grid.set_matrix(self.states[self.step])
 
     def step_backward(self):
-        """Step backward in recorded history."""
         if self.step > 0:
             self.step -= 1
             self.grid.set_matrix(self.states[self.step])
 
     def toggle_play(self):
-        """Toggle live playback pause/resume or restart match."""
         if not self.game_started:
             self.start_live_match()
             return
@@ -289,7 +275,7 @@ class AdversarialSokobanGame:
                     elif event.key == pygame.K_v:
                         self.cycle_algo(2, 1)
 
-                    # Number input for max actions in real time
+                    # lets user input max action count
                     elif event.unicode.isdigit():
                         if self.actions_input == "0":
                             self.actions_input = event.unicode
@@ -300,23 +286,20 @@ class AdversarialSokobanGame:
                             self.max_steps = int(self.actions_input)
                         self.reset_match_state()
 
-                    # Backspace to remove digits from action input
+                    # removes digits
                     elif event.key == pygame.K_BACKSPACE:
                         self.actions_input = self.actions_input[:-1]
                         if self.actions_input and int(self.actions_input) > 0:
                             self.max_steps = int(self.actions_input)
                         self.reset_match_state()
 
-                    # Start / Pause live execution
                     elif event.key == pygame.K_SPACE:
                         self.toggle_play()
 
-                    # Step forward manually
                     elif event.key == pygame.K_RIGHT:
                         self.playing = False
                         self.advance_step()
 
-                    # Step backward in history
                     elif event.key == pygame.K_LEFT:
                         self.playing = False
                         self.step_backward()
@@ -325,7 +308,6 @@ class AdversarialSokobanGame:
                         pygame.quit()
                         sys.exit()
 
-            # Advance live turns at fixed interval
             if self.playing and not self.is_game_over:
                 self.timer += dt
                 if self.timer >= self.step_delay:
@@ -366,24 +348,9 @@ class AdversarialSokobanGame:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the 2-Agent Adversarial Sokoban GUI.")
-    default_map = os.path.join(root, "tiny.txt")
-    parser.add_argument("input_file", nargs="?", default=default_map,
-                        help="path to the Sokoban map file (default: tiny.txt)")
-    parser.add_argument("--steps", "-n", type=int, default=100,
-                        help="maximum number of steps (default: 100)")
-    args = parser.parse_args()
+    map = "./adversarial_input.txt"
 
-    map_file = args.input_file
-    if not os.path.exists(map_file):
-        candidate = os.path.join(root, map_file)
-        if os.path.exists(candidate):
-            map_file = candidate
-        else:
-            print(f"Map {map_file} not found.")
-            return
-
-    AdversarialSokobanGame(map_file, max_steps=args.steps).run()
+    AdversarialSokobanGame(map).run()
 
 
 if __name__ == "__main__":
